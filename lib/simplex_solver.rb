@@ -1,13 +1,12 @@
 # require 'simplex_solver/version'
+require 'pp'
+# require 'awesome_print'
 
 # Simplex Solver
 module SimplexSolver
   def self.solve(rules)
     tb = Operations.new.tableau(rules)
-
-    tb.each do |line|
-      p line
-    end
+    pp tb
   end
 
   # Solver's operations
@@ -30,6 +29,7 @@ module SimplexSolver
 
       setup_lines(n_rules, rules[1], vars)
       build_labels(vars)
+      build_z(z_func)
     end
 
     def setup_lines(n_rules, rule, vars)
@@ -51,6 +51,19 @@ module SimplexSolver
 
       first_line[-1] = 'V'
     end
+
+    def build_z(z_func)
+      z_line    = @tb[1]
+      z_line[0] = 'z'
+      z_line.drop(1).each_with_index do |_, i|
+        begin
+          z_line[i + 1] = (z_func[0] == :min ? z_func[i + 1] : -z_func[i + 1])
+        rescue NoMethodError
+          z_line[i + 1] = 0
+        end
+      end
+    end
+
   end
 end
 
