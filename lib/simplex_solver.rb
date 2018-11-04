@@ -30,12 +30,13 @@ module SimplexSolver
       setup_lines(n_rules, rules[1], vars)
       build_labels(vars)
       build_z(z_func)
+      build_rules(rules, vars)
     end
 
     def setup_lines(n_rules, rule, vars)
       slacks = n_rules
       slacks *= 2 if rule[0] == :>=
-      @tb = Array.new(slacks + 2) { Array.new(vars + slacks + 2) }
+      @tb = Array.new(slacks + 2) { Array.new(vars + slacks + 2, 0) }
     end
 
     def build_labels(vars)
@@ -45,8 +46,8 @@ module SimplexSolver
       vars.times do |i|
         first_line[i + 1] = 'x' + (i + 1).to_s
       end
-      first_line.drop(vars + 1).each_with_index do |_, i|
-        first_line[i + vars + 1] = 's' + (i + 1).to_s
+      first_line.drop(vars + 1).each.with_index(1) do |_, i|
+        first_line[i + vars] = 's' + i.to_s
       end
 
       first_line[-1] = 'V'
@@ -64,6 +65,18 @@ module SimplexSolver
       end
     end
 
+    def build_rules(rules, vars)
+      rules.drop(1).each.with_index(1) do |rule, i|
+        line = @tb[i + 1]
+        col  = i + vars
+
+        line[0]   = @tb[0][col]
+        line[col] = 1
+        line[-1]  = rule[-1]
+
+        vars.times { |v| line[v + 1] = rule[v + 1] }
+      end
+    end
   end
 end
 
