@@ -1,98 +1,32 @@
-# require 'simplex_solver/version'
-require 'pp'
+require_relative 'simplex_solver/operations/build_tableau'
+
 # require 'awesome_print'
 
 # Simplex Solver
 module SimplexSolver
   def self.solve(rules)
-    tb = Operations.new.tableau(rules)
-    pp tb
-  end
-
-  # Solver's operations
-  class Operations
-    def initialize
-      @tb = []
-    end
-
-    def tableau(rules)
-      build_tableau(rules)
-      @tb
-    end
-
-    private
-
-    def build_tableau(rules)
-      z_func  = rules[0]
-      vars    = z_func.size - 1
-      n_rules = rules.size - 1 # remove linha z
-
-      setup_lines(n_rules, rules[1], vars)
-      build_labels(vars)
-      build_z(z_func)
-      build_rules(rules, vars)
-    end
-
-    def setup_lines(n_rules, rule, vars)
-      slacks = n_rules
-      slacks *= 2 if rule[0] == :>=
-      @tb = Array.new(slacks + 2) { Array.new(vars + slacks + 2, 0) }
-    end
-
-    def build_labels(vars)
-      first_line = @tb[0]
-
-      first_line[0] = ''
-      vars.times do |i|
-        first_line[i + 1] = 'x' + (i + 1).to_s
-      end
-      first_line.drop(vars + 1).each.with_index(1) do |_, i|
-        first_line[i + vars] = 's' + i.to_s
-      end
-
-      first_line[-1] = 'V'
-    end
-
-    def build_z(z_func)
-      z_line    = @tb[1]
-      z_line[0] = 'z'
-      z_line.drop(1).each_with_index do |_, i|
-        begin
-          z_line[i + 1] = (z_func[0] == :min ? z_func[i + 1] : -z_func[i + 1])
-        rescue NoMethodError
-          z_line[i + 1] = 0
-        end
-      end
-    end
-
-    def build_rules(rules, vars)
-      rules.drop(1).each.with_index(1) do |rule, i|
-        line = @tb[i + 1]
-        col  = i + vars
-
-        line[0]   = @tb[0][col]
-        line[col] = 1
-        line[-1]  = rule[-1]
-
-        vars.times { |v| line[v + 1] = rule[v + 1] }
-      end
-    end
+    tb = Operations::BuildTableau.new(rules).tableau
+    Operations::BuildTableau.print_tableau(tb)
   end
 end
 
 # MAXIMIZACAO
+
+type = :max
+
 restrictions = [
-  [:max, 32, 17], # z
-  [:<=, 3, 4, 3], # s1
-  [:<=, 5, 6, 5], # s2
-  [:<=, 7, 8, 7]  # s3
+  [type, 32, 17], # z
+  [3, 4, 3], # s1
+  [5, 6, 5], # s2
+  [7, 8, 7]  # s3
 ]
 
+# type = :min
+
 # restrictions = [
-#   [:max, 32, 17], # z
-#   [:>=, 3, 4, 3], # s1
-#   [:<=, 5, 6, 5], # s2
-#   [:<=, 7, 8, 7]  # s3
+#   [type, 3, 5, 7], # z
+#   [3, 5, 7, 32], # s1
+#   [4, 6, 8, 17], # s2
 # ]
 
 SimplexSolver.solve(restrictions)
