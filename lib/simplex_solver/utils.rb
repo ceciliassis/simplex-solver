@@ -6,7 +6,10 @@ module SimplexSolver
   # Utils
   module Utils
     def self.print_tableau(tableau)
+      puts
       tableau.each { |l| p l }
+      puts
+      tableau[1..-1].each { |l| puts "#{l[0]}: #{l[-1]}" }
     end
 
     def self.build_tableau(rules)
