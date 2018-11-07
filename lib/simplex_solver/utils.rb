@@ -1,8 +1,24 @@
-require 'matrix'
+# frozen_string_literal: true
+
+Element = Struct.new('Element', :value, :index)
 
 module SimplexSolver
-  module Operations
-    # BuildTableau
+  # Utils
+  module Utils
+    def self.print_tableau(tableau)
+      tableau.each { |l| p l }
+    end
+
+    def self.build_tableau(rules)
+      BuildTableau.new(rules).tableau
+    end
+
+    def self.smallest(row, from_divs = false)
+      row = row.select(&:positive?) if from_divs
+      Element.new(row.min, row.index(row.min))
+    end
+
+    #  BuildTableau
     class BuildTableau
       def initialize(rules)
         @tb = []
@@ -16,7 +32,8 @@ module SimplexSolver
       private
 
       def build_tableau(rules)
-        rules  = setup_rules(rules)
+        setup_rules(rules)
+
         z_func = rules[0]
         vars   = z_func.size - 1
         slacks = rules.size - 1 # remove linha z
@@ -28,11 +45,14 @@ module SimplexSolver
       end
 
       def setup_rules(rules)
+        rules[0].shift
         rules[0] << 0
+
+        rules.each { |rule| rule.map! { |num| Float(num) } }
       end
 
       def setup_lines(slacks, vars)
-        @tb = Array.new(slacks + 2) { Array.new(vars + slacks + 2, 0) }
+        @tb = Array.new(slacks + 2) { Array.new(vars + slacks + 2, 0.0) }
       end
 
       def build_labels(vars, slacks)
@@ -47,16 +67,16 @@ module SimplexSolver
       def build_z(z_func)
         z_line    = @tb[1]
         z_line[0] = 'z'
-        z_func.each.with_index(1) { |e, i| z_line[i] = (el.zero? ? e : -e) }
+        z_func.each.with_index(1) { |e, i| z_line[i] = (e.zero? ? e : -e) }
       end
 
       def build_rules(rules, vars)
-        rules.drop(1).each.with_index(1) do |rule, i|
+        rules[1..-1].each.with_index(1) do |rule, i|
           line = @tb[i + 1]
           col  = i + vars
 
           line[0]   = @tb[0][col]
-          line[col] = 1
+          line[col] = 1.0
           line[-1]  = rule[-1]
 
           vars.times { |v| line[v + 1] = rule[v] }
