@@ -6,7 +6,6 @@ require_relative 'simplex_solver/operations/build_tableau'
 module SimplexSolver
   def self.solve(rules)
     tb = Operations::BuildTableau.new(rules).tableau
-    Operations::BuildTableau.print_tableau(tb)
   end
 end
 

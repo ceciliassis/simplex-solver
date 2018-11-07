@@ -36,18 +36,12 @@ module SimplexSolver
       end
 
       def build_labels(vars, slacks)
-        first_line = @tb[0]
+        fl     = @tb[0]
+        fl[0]  = ''
+        fl[-1] = 'V'
 
-        first_line[0]  = ''
-        first_line[-1] = 'V'
-
-        vars.times do |i|
-          first_line[i + 1] = 'x' + (i + 1).to_s
-        end
-
-        slacks.times do |i|
-          first_line[vars + i + 1] = 's' + (i + 1).to_s
-        end
+        vars.times { |i| fl[i + 1] = 'x' + (i + 1).to_s }
+        slacks.times { |i| fl[vars + i + 1] = 's' + (i + 1).to_s }
       end
 
       def build_z(z_func)
