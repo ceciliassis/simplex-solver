@@ -13,19 +13,10 @@ module SimplexSolver
         @tb
       end
 
-      def self.print_tableau(tableau)
-        puts "---- Tableau -----\n\n"
-        tableau.each { |line| p line }
-      end
-
       private
 
       def build_tableau(rules)
-        type = rules[0].shift
-        rules[0] << 0
-
-        rules = transpose_rules(rules) if type == :min
-
+        rules  = setup_rules(rules)
         z_func = rules[0]
         vars   = z_func.size - 1
         slacks = rules.size - 1 # remove linha z
@@ -36,10 +27,8 @@ module SimplexSolver
         build_rules(rules, vars)
       end
 
-      def transpose_rules(rules)
-        rules << rules.shift
-        rules = Matrix[*rules].transpose.to_a
-        rules.unshift(rules.pop)
+      def setup_rules(rules)
+        rules[0] << 0
       end
 
       def setup_lines(slacks, vars)
@@ -64,9 +53,7 @@ module SimplexSolver
       def build_z(z_func)
         z_line    = @tb[1]
         z_line[0] = 'z'
-        z_func.each.with_index(1) do |elem, i|
-          z_line[i] = -elem
-        end
+        z_func.each.with_index(1) { |e, i| z_line[i] = (el.zero? ? e : -e) }
       end
 
       def build_rules(rules, vars)
