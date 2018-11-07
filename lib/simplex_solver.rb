@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require_relative 'simplex_solver/utils'
+require 'simplex_solver/utils'
+require 'pp'
 
 # Simplex Solver
 module SimplexSolver
@@ -11,7 +12,7 @@ module SimplexSolver
 
       run
 
-      print("\n --- ---- Final ---- ---")
+      print("\n--- ---- Final ---- ---")
       Utils.print_tableau(@tb)
     end
 
@@ -75,11 +76,14 @@ type = :max
 #   [7, 8, 7]       # s3
 # ]
 
-restrictions = [
+_restrictions = [
   [type, 9, 17, 14],  # z
   [30, 65, 20, 2100], # s1
   [65, 63, 80, 660],  # s2
   [19, 7, 2, 480]     # s3
 ]
+
+path = 'data/matrix.txt'
+restrictions = SimplexSolver::Utils.read_from_file(path)
 
 SimplexSolver.solve(restrictions)

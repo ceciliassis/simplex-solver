@@ -5,6 +5,15 @@ Element = Struct.new('Element', :value, :index)
 module SimplexSolver
   # Utils
   module Utils
+    def self.read_from_file(path)
+      rules = []
+      File.open(path).each.with_index do |line, i|
+        line = line.split.map { |ele| Float(ele) }
+        rules << (i.zero? ? [:max, *line] : line)
+      end
+      rules
+    end
+
     def self.print_tableau(tableau)
       puts
       tableau.each { |l| p l }
